@@ -1,12 +1,16 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trash2, Loader2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Trash2, Loader2, LogOut, User, Users, MapPin, Building } from 'lucide-react';
 import Link from 'next/link';
 import { deleteSubdomainAction } from '@/app/actions';
 import { rootDomain, protocol } from '@/lib/utils';
+import { useAuth } from '@/lib/use-auth';
+import { UserManagement } from './components/user-management';
+import { GolfCourseManagement } from './components/golf-course-management';
 
 type Tenant = {
   subdomain: string;
@@ -20,18 +24,33 @@ type DeleteState = {
 };
 
 function DashboardHeader() {
-  // TODO: You can add authentication here with your preferred auth provider
+  const { user, logout } = useAuth();
 
   return (
     <div className="flex justify-between items-center mb-8">
       <h1 className="text-3xl font-bold">Subdomain Management</h1>
       <div className="flex items-center gap-4">
+        {user && (
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <User className="h-4 w-4" />
+            <span>Welcome, {user.name}</span>
+          </div>
+        )}
         <Link
           href={`${protocol}://${rootDomain}`}
           className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
         >
           {rootDomain}
         </Link>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={logout}
+          className="flex items-center gap-2"
+        >
+          <LogOut className="h-4 w-4" />
+          Logout
+        </Button>
       </div>
     </div>
   );
@@ -114,11 +133,71 @@ export function AdminDashboard({ tenants }: { tenants: Tenant[] }) {
     deleteSubdomainAction,
     {}
   );
+  const { isAuthenticated, isLoading, checkAuth } = useAuth();
+  const [activeTab, setActiveTab] = useState('subdomains');
+
+  useEffect(() => {
+    // Check authentication when component mounts
+    if (!isLoading && !isAuthenticated) {
+      checkAuth();
+    }
+  }, [isLoading, isAuthenticated, checkAuth]);
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to login if not authenticated (handled by useAuth hook)
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 relative p-4 md:p-8">
       <DashboardHeader />
-      <TenantGrid tenants={tenants} action={action} isPending={isPending} />
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="subdomains" className="flex items-center gap-2">
+            <Building className="h-4 w-4" />
+            Subdomains
+          </TabsTrigger>
+          <TabsTrigger value="users" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            System Users
+          </TabsTrigger>
+          <TabsTrigger value="golf-courses" className="flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            Golf Courses
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="subdomains" className="space-y-6">
+          <TenantGrid tenants={tenants} action={action} isPending={isPending} />
+        </TabsContent>
+        
+        <TabsContent value="users" className="space-y-6">
+          <UserManagement />
+        </TabsContent>
+        
+        <TabsContent value="golf-courses" className="space-y-6">
+          <GolfCourseManagement />
+        </TabsContent>
+      </Tabs>
 
       {state.error && (
         <div className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-md">

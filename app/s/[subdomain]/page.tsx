@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getSubdomainData } from '@/lib/subdomains';
+import { getGolfCourseBySubdomain } from '@/lib/golf-course-mapping';
 import { protocol, rootDomain } from '@/lib/utils';
 
 export async function generateMetadata({
@@ -34,6 +35,14 @@ export default async function SubdomainPage({
 
   if (!subdomainData) {
     notFound();
+  }
+
+  // Check if this subdomain has a golf course mapping
+  const golfCourseMapping = await getGolfCourseBySubdomain(subdomain);
+  
+  // If there's a golf course mapping, redirect directly to admin dashboard
+  if (golfCourseMapping) {
+    redirect('/admin/dashboard');
   }
 
   return (

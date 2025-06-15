@@ -1,6 +1,6 @@
 import { getAllSubdomains } from '@/lib/subdomains';
 import type { Metadata } from 'next';
-import { AdminDashboard } from './dashboard';
+import { AdminWrapper } from './admin-wrapper';
 import { rootDomain } from '@/lib/utils';
 
 export const metadata: Metadata = {
@@ -9,12 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminPage() {
-  // TODO: You can add authentication here with your preferred auth provider
   const tenants = await getAllSubdomains();
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-      <AdminDashboard tenants={tenants} />
-    </div>
-  );
+  return <AdminWrapper tenants={tenants} />;
 }

@@ -5,7 +5,13 @@ import { rootDomain } from '@/lib/utils';
 export default async function HomePage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-white p-4 relative">
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 flex gap-4">
+        <Link
+          href="/admin/login"
+          className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          Login
+        </Link>
         <Link
           href="/admin"
           className="text-sm text-gray-500 hover:text-gray-700 transition-colors"

@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../app/generated/prisma"
@@ -12,4 +6,336 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model SystemUser {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  password  String
+  email     String   @default("")
+  isActive  Boolean  @default(true)
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model User {
+  id           Int        @id @default(autoincrement())
+  username     String
+  password     String
+  email        String     @default("")
+  firstName    String     @default("")
+  lastName     String     @default("")
+  role         UserRole   @default(STAFF)
+  isActive     Boolean    @default(true)
+  golfCourseId Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now())
+  GolfCourse   GolfCourse @relation(fields: [golfCourseId], references: [id])
+
+  @@unique([username, golfCourseId], map: "unique_username_per_course")
+}
+
+model Booking {
+  id                 Int                @id @default(autoincrement())
+  bookingUUID        String             @unique
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @default(now())
+  golfCourseId       Int
+  phone              String             @default("")
+  email              String             @default("")
+  firstName          String             @default("")
+  lastName           String             @default("")
+  bookingStatus      BookingStatus      @default(PENDING)
+  subTotal           Decimal            @default(0) @db.Decimal(10, 2)
+  tax                Decimal            @default(0) @db.Decimal(10, 2)
+  discount           Decimal            @default(0) @db.Decimal(10, 2)
+  total              Decimal            @default(0) @db.Decimal(10, 2)
+  integrationStatus  IntegrationStatus  @default(PENDING)
+  sentReminder       Boolean            @default(false)
+  sentExpiration     Boolean            @default(false)
+  notificationStatus NotificationStatus @default(PENDING)
+  isSpecial          Boolean            @default(false)
+  GolfCourse         GolfCourse         @relation(fields: [golfCourseId], references: [id])
+  BookingDetail      BookingDetail[]
+  BookingPayment     BookingPayment[]
+}
+
+model BookingDetail {
+  id              Int         @id @default(autoincrement())
+  bookingUUID     String
+  teeTime         DateTime
+  playerNames     String      @default("")
+  numberOfPlayers Int         @default(1)
+  subTotal        Decimal     @default(0) @db.Decimal(10, 2)
+  tax             Decimal     @default(0) @db.Decimal(10, 2)
+  total           Decimal     @default(0) @db.Decimal(10, 2)
+  discount        Decimal     @default(0) @db.Decimal(10, 2)
+  cart            Boolean     @default(true)
+  holes           Int         @default(18)
+  playerType      player_type @default(adult)
+  rateType        rate_type   @default(cart)
+  Booking         Booking     @relation(fields: [bookingUUID], references: [bookingUUID])
+}
+
+model BookingPayment {
+  id          Int      @id @default(autoincrement())
+  bookingUUID String
+  amount      Decimal  @default(0) @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  Booking     Booking  @relation(fields: [bookingUUID], references: [bookingUUID])
+}
+
+model CallHistory {
+  id                        Int        @id @default(autoincrement())
+  createdAt                 DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt                 DateTime   @default(now()) @db.Timestamptz(6)
+  callId                    String     @unique @db.VarChar
+  agentId                   String     @db.VarChar
+  customerPhone             String     @db.VarChar
+  restaurantPhone           String     @db.VarChar
+  startTimeStamp            DateTime   @db.Timestamptz(6)
+  endTimeStamp              DateTime   @db.Timestamptz(6)
+  transcript                String     @default("") @db.VarChar
+  callSummary               String     @default("") @db.VarChar
+  userSentiment             String     @default("") @db.VarChar
+  agentTaskCompletionRating String     @default("") @db.VarChar
+  callCompletionRating      String     @default("") @db.VarChar
+  callStatus                String     @default("") @db.VarChar
+  recordingUrl              String     @default("") @db.VarChar
+  callType                  String     @default("") @db.VarChar
+  disconnectionReason       String     @default("") @db.VarChar
+  golfCourseId              Int
+  GolfCourse                GolfCourse @relation(fields: [golfCourseId], references: [id])
+}
+
+model CheckInOrder {
+  id                 Int                  @id @default(autoincrement())
+  createdAt          DateTime             @default(now())
+  customerName       String
+  customerPhone      String
+  totalAmount        Decimal              @default(0) @db.Decimal(10, 2)
+  paymentStatus      PaymentStatus        @default(PENDING)
+  golfCourseId       Int
+  GolfCourse         GolfCourse           @relation(fields: [golfCourseId], references: [id])
+  CheckInOrderDetail CheckInOrderDetail[]
+}
+
+model CheckInOrderDetail {
+  id             Int          @id @default(autoincrement())
+  checkInOrderId Int
+  teeTime        DateTime
+  playerName     String       @default("")
+  total          Decimal      @default(0) @db.Decimal(10, 2)
+  holes          Int          @default(18)
+  playerType     player_type  @default(adult)
+  rateType       rate_type    @default(cart)
+  CheckInOrder   CheckInOrder @relation(fields: [checkInOrderId], references: [id])
+}
+
+model CheckInTransaction {
+  id                Int               @id @default(autoincrement())
+  createdAt         DateTime          @default(now())
+  customerName      String
+  customerPhone     String
+  teeTime           DateTime
+  numberOfPlayers   Int
+  totalAmount       Decimal           @default(0) @db.Decimal(10, 2)
+  paymentStatus     PaymentStatus     @default(PENDING)
+  integrationStatus IntegrationStatus @default(PENDING)
+  golfCourseId      Int
+  slots             String            @default("1")
+  GolfCourse        GolfCourse        @relation(fields: [golfCourseId], references: [id])
+}
+
+model Customer {
+  id           Int        @id @default(autoincrement())
+  firstName    String     @default("")
+  lastName     String     @default("")
+  phone        String     @default("")
+  email        String     @default("")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now())
+  golfCourseId Int
+  isMember     Boolean    @default(false)
+  GolfCourse   GolfCourse @relation(fields: [golfCourseId], references: [id])
+
+  @@unique([phone, golfCourseId], map: "phone_courseid")
+}
+
+model GolfCourse {
+  id                         Int                      @id @default(autoincrement())
+  name                       String
+  address                    String                   @default("")
+  city                       String                   @default("")
+  state                      String                   @default("")
+  zip                        String                   @default("")
+  phone                      String                   @default("")
+  website                    String                   @default("")
+  image                      String                   @default("")
+  golfNowFacilityId          String                   @default("")
+  smsPhoneNumber             String                   @default("")
+  notificationList           String                   @default("")
+  retellAgentId              String                   @default("")
+  taxRate                    Decimal                  @default(0.06) @db.Decimal(4, 2)
+  discountRate               Decimal                  @default(0.1) @db.Decimal(4, 2)
+  createdAt                  DateTime                 @default(now())
+  updatedAt                  DateTime
+  cloudPrinterSerialNumber   String                   @default("")
+  receiptPrinterSerialNumber String                   @default("")
+  leadDiscountRate           Decimal                  @default(0.3) @db.Decimal(4, 2)
+  Booking                    Booking[]
+  CallHistory                CallHistory[]
+  CheckInOrder               CheckInOrder[]
+  CheckInTransaction         CheckInTransaction[]
+  Customer                   Customer[]
+  User                       User[]
+  checkin_tee_time_sheet     checkin_tee_time_sheet[]
+  golf_rates                 golf_rates[]
+  tee_time_sheet             tee_time_sheet[]
+}
+
+model PhoneCall {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  callId     String
+  agentId    String
+  fromNumber String
+  toNumber   String
+}
+
+model checkin_tee_time_sheet {
+  id           Int        @id @default(autoincrement())
+  golfCourseId Int
+  date         DateTime   @db.Date
+  tee_time     DateTime   @db.Time(6)
+  slot1        String?    @db.VarChar(100)
+  slot2        String?    @db.VarChar(100)
+  slot3        String?    @db.VarChar(100)
+  slot4        String?    @db.VarChar(100)
+  slot1_status Boolean    @default(false)
+  slot2_status Boolean    @default(false)
+  slot3_status Boolean    @default(false)
+  slot4_status Boolean    @default(false)
+  GolfCourse   GolfCourse @relation(fields: [golfCourseId], references: [id])
+
+  @@unique([golfCourseId, date, tee_time], map: "unique_checkin_course_date_teetime")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model golf_rates {
+  id                Int         @id @default(autoincrement())
+  golf_course_id    Int
+  season_start_date DateTime    @db.Date
+  season_end_date   DateTime    @db.Date
+  day_of_week       Int
+  time_start        DateTime    @db.Time(6)
+  time_end          DateTime    @db.Time(6)
+  player_type       player_type
+  rate_type         rate_type
+  holes             Int
+  rate              Decimal     @db.Decimal(10, 2)
+  created_at        DateTime?   @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime?   @default(now()) @db.Timestamptz(6)
+  GolfCourse        GolfCourse  @relation(fields: [golf_course_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([golf_course_id, season_start_date, season_end_date, day_of_week, time_start, time_end, player_type, rate_type, holes], map: "unique_rate")
+  @@index([golf_course_id], map: "idx_golf_rates_course")
+  @@index([day_of_week, time_start, time_end], map: "idx_golf_rates_day_time")
+  @@index([player_type, rate_type, holes], map: "idx_golf_rates_player")
+  @@index([season_start_date, season_end_date], map: "idx_golf_rates_season")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model tee_time_checkins {
+  id             Int       @id @default(autoincrement())
+  tee_time       DateTime  @unique(map: "tee_time") @db.Timestamp(6)
+  checkin_slots  String
+  checkin_names  String
+  checkin_status String
+  price          Decimal   @db.Decimal(10, 2)
+  course_id      Int
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  updated_at     DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([course_id], map: "idx_tee_time_checkins_course_id")
+  @@index([tee_time], map: "idx_tee_time_checkins_tee_time")
+}
+
+model tee_time_sheet {
+  id           Int        @id @default(autoincrement())
+  golfCourseId Int
+  date         DateTime   @db.Date
+  tee_time     DateTime   @db.Time(6)
+  slot1        String?    @db.VarChar(100)
+  slot2        String?    @db.VarChar(100)
+  slot3        String?    @db.VarChar(100)
+  slot4        String?    @db.VarChar(100)
+  slot1_status Boolean    @default(false)
+  slot2_status Boolean    @default(false)
+  slot3_status Boolean    @default(false)
+  slot4_status Boolean    @default(false)
+  GolfCourse   GolfCourse @relation(fields: [golfCourseId], references: [id])
+
+  @@unique([golfCourseId, date, tee_time], map: "unique_course_date_teetime")
+}
+
+model us_holidays {
+  id           Int       @id @default(autoincrement())
+  holiday_date DateTime  @unique(map: "unique_holiday_date") @db.Date
+  holiday_name String    @db.VarChar(100)
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([holiday_date], map: "idx_us_holidays_date")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model v_rate {
+  rate Decimal? @db.Decimal(10, 2)
+
+  @@ignore
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  PAID
+}
+
+enum IntegrationStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum player_type {
+  adult
+  junior
+  senior_veteran
+}
+
+enum rate_type {
+  cart
+  walking
+}
+
+enum UserRole {
+  OWNER
+  MANAGER
+  STAFF
 }

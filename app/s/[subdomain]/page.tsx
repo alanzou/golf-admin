@@ -40,9 +40,9 @@ export default async function SubdomainPage({
   // Check if this subdomain has a golf course mapping
   const golfCourseMapping = await getGolfCourseBySubdomain(subdomain);
   
-  // If there's a golf course mapping, redirect directly to admin dashboard
+  // If there's a golf course mapping, redirect to login page
   if (golfCourseMapping) {
-    redirect('/admin/dashboard');
+    redirect('/login');
   }
 
   return (

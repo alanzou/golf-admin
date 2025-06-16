@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@/app/generated/prisma';
+import { prisma } from '@/lib/db';
 import { verifyGolfCourseToken } from '@/lib/auth-middleware';
-
-const prisma = new PrismaClient();
 
 // GET /api/golf-course/[courseId]/settings - Get golf course settings
 export async function GET(

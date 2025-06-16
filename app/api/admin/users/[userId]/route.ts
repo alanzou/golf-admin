@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@/app/generated/prisma';
+import { prisma } from '@/lib/db';
 import { hashPassword } from '@/lib/auth';
 import { verifyToken } from '@/lib/auth-middleware';
-
-const prisma = new PrismaClient();
 
 // PUT /api/admin/users/[userId] - Update system user
 export async function PUT(

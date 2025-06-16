@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@/app/generated/prisma';
+import { prisma } from '@/lib/db';
 import { verifyToken } from '@/lib/auth-middleware';
-
-const prisma = new PrismaClient();
 
 // PUT /api/admin/golf-courses/[courseId] - Update golf course
 export async function PUT(

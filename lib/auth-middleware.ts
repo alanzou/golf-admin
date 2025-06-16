@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken as verifyJwtToken } from './auth';
-import { PrismaClient } from '@/app/generated/prisma';
+import { prisma } from './db';
 import jwt from 'jsonwebtoken';
-
-const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 export function withAuth(handler: (request: NextRequest, user: any) => Promise<NextResponse>) {

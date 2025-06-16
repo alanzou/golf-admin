@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken as verifyJwtToken } from './auth';
 import { prisma } from './db';
 import jwt from 'jsonwebtoken';
+
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
+// Add warning if JWT_SECRET is not set
+if (!process.env.JWT_SECRET) {
+  console.warn('⚠️  JWT_SECRET environment variable is not set! Using fallback value. Please set JWT_SECRET in your .env.local file.');
+}
 
 export function withAuth(handler: (request: NextRequest, user: any) => Promise<NextResponse>) {
   return async (request: NextRequest) => {
@@ -46,6 +52,13 @@ export async function verifyToken(request: NextRequest) {
     }
 
     const token = authHeader.substring(7);
+    
+    // Add token validation
+    if (!token || token.length < 10) {
+      console.error('Token appears to be malformed or empty:', token);
+      return { success: false, error: 'Malformed token' };
+    }
+
     const decoded = jwt.verify(token, JWT_SECRET) as any;
 
     // Get system user from database
@@ -67,6 +80,12 @@ export async function verifyToken(request: NextRequest) {
     return { success: true, user };
   } catch (error) {
     console.error('Token verification error:', error);
+    if (error instanceof jwt.JsonWebTokenError) {
+      return { success: false, error: 'Invalid token format' };
+    }
+    if (error instanceof jwt.TokenExpiredError) {
+      return { success: false, error: 'Token expired' };
+    }
     return { success: false, error: 'Invalid token' };
   }
 }

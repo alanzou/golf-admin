@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, LogOut, User, Users, Settings, Building } from 'lucide-react';
+import { Loader2, LogOut, User, Users, Settings, Building, FileText, Calendar, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import { useGolfCourseAuth } from '@/lib/use-golf-course-auth';
 import { GolfCourseUserManagement } from './golf-course-user-management';
@@ -62,7 +62,7 @@ export function GolfCourseAdminDashboard({ golfCourseId, golfCourseName, subdoma
     if (!isLoading && !isAuthenticated) {
       checkAuth(golfCourseId);
     }
-  }, [isLoading, isAuthenticated, checkAuth, golfCourseId]);
+  }, [isLoading, isAuthenticated, golfCourseId]);
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -142,7 +142,20 @@ export function GolfCourseAdminDashboard({ golfCourseId, golfCourseName, subdoma
                     )}
                     <Link href="/bookings" className="block">
                       <Button variant="outline" className="w-full justify-start">
+                        <Calendar className="h-4 w-4 mr-2" />
                         View Bookings
+                      </Button>
+                    </Link>
+                    <Link href="/checkin-report" className="block">
+                      <Button variant="outline" className="w-full justify-start">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Check-in Report
+                      </Button>
+                    </Link>
+                    <Link href="/tee-time-sheet" className="block">
+                      <Button variant="outline" className="w-full justify-start">
+                        <ClipboardList className="h-4 w-4 mr-2" />
+                        Tee Time Sheet
                       </Button>
                     </Link>
                   </div>

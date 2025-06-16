@@ -45,10 +45,11 @@ export function UserManagement() {
     isActive: true
   });
   const [submitting, setSubmitting] = useState(false);
-  const { token } = useAuth();
+  const { getToken } = useAuth();
 
   const fetchUsers = async () => {
     try {
+      const token = getToken();
       const response = await fetch('/api/admin/users', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -78,6 +79,7 @@ export function UserManagement() {
     setError(null);
 
     try {
+      const token = getToken();
       const response = await fetch('/api/admin/users', {
         method: 'POST',
         headers: {
@@ -121,6 +123,7 @@ export function UserManagement() {
         delete updateData.password; // Don't update password if empty
       }
 
+      const token = getToken();
       const response = await fetch(`/api/admin/users/${editingUser.id}`, {
         method: 'PUT',
         headers: {
@@ -149,6 +152,7 @@ export function UserManagement() {
     if (!confirm('Are you sure you want to delete this user?')) return;
 
     try {
+      const token = getToken();
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {

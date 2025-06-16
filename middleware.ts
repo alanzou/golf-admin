@@ -45,8 +45,8 @@ export async function middleware(request: NextRequest) {
   const subdomain = extractSubdomain(request);
 
   if (subdomain) {
-    // Allow /admin and /login on subdomains (for subdomain-specific pages)
-    if (pathname.startsWith('/admin') || pathname.startsWith('/login')) {
+    // Allow /admin, /login, /bookings, /checkin-report, and /tee-time-sheet on subdomains (for subdomain-specific pages)
+    if (pathname.startsWith('/admin') || pathname.startsWith('/login') || pathname.startsWith('/bookings') || pathname.startsWith('/checkin-report') || pathname.startsWith('/tee-time-sheet')) {
       return NextResponse.rewrite(new URL(`/s/${subdomain}${pathname}`, request.url));
     }
 

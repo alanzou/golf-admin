@@ -11,6 +11,7 @@ import { rootDomain, protocol } from '@/lib/utils';
 import { useAuth } from '@/lib/use-auth';
 import { UserManagement } from './components/user-management';
 import { GolfCourseManagement } from './components/golf-course-management';
+import { GolfCourseUserManagement } from './components/golf-course-user-management';
 
 type Tenant = {
   subdomain: string;
@@ -141,7 +142,7 @@ export function AdminDashboard({ tenants }: { tenants: Tenant[] }) {
     if (!isLoading && !isAuthenticated) {
       checkAuth();
     }
-  }, [isLoading, isAuthenticated, checkAuth]);
+  }, [isLoading, isAuthenticated]);
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -171,7 +172,7 @@ export function AdminDashboard({ tenants }: { tenants: Tenant[] }) {
       <DashboardHeader />
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="subdomains" className="flex items-center gap-2">
             <Building className="h-4 w-4" />
             Subdomains
@@ -183,6 +184,10 @@ export function AdminDashboard({ tenants }: { tenants: Tenant[] }) {
           <TabsTrigger value="golf-courses" className="flex items-center gap-2">
             <MapPin className="h-4 w-4" />
             Golf Courses
+          </TabsTrigger>
+          <TabsTrigger value="golf-course-users" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Golf Course Users
           </TabsTrigger>
         </TabsList>
         
@@ -196,6 +201,10 @@ export function AdminDashboard({ tenants }: { tenants: Tenant[] }) {
         
         <TabsContent value="golf-courses" className="space-y-6">
           <GolfCourseManagement />
+        </TabsContent>
+        
+        <TabsContent value="golf-course-users" className="space-y-6">
+          <GolfCourseUserManagement />
         </TabsContent>
       </Tabs>
 

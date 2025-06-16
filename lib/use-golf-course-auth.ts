@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface GolfCourseUser {
@@ -69,7 +69,7 @@ export function useGolfCourseAuth() {
     });
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('golf_course_auth_token');
     localStorage.removeItem('golf_course_user_data');
     setAuthState({
@@ -79,9 +79,9 @@ export function useGolfCourseAuth() {
       isAuthenticated: false
     });
     // Don't redirect here - let the calling component handle it
-  };
+  }, []);
 
-  const checkAuth = async (golfCourseId: number): Promise<boolean> => {
+  const checkAuth = useCallback(async (golfCourseId: number): Promise<boolean> => {
     const token = authState.token || localStorage.getItem('golf_course_auth_token');
     
     if (!token) {
@@ -113,7 +113,7 @@ export function useGolfCourseAuth() {
       logout();
       return false;
     }
-  };
+  }, [authState.token, logout]);
 
   const hasRole = (requiredRole: string): boolean => {
     if (!authState.user) return false;

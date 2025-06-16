@@ -31,7 +31,7 @@ export function AdminWrapper({ tenants }: AdminWrapperProps) {
     };
 
     verifyAuth();
-  }, [isLoading, checkAuth, router]);
+  }, [isLoading, router]);
 
   // Show loading state while checking authentication
   if (isLoading) {

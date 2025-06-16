@@ -65,10 +65,11 @@ export function GolfCourseManagement() {
     leadDiscountRate: 0.3
   });
   const [submitting, setSubmitting] = useState(false);
-  const { token } = useAuth();
+  const { getToken } = useAuth();
 
   const fetchGolfCourses = async () => {
     try {
+      const token = getToken();
       const response = await fetch('/api/admin/golf-courses', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -98,6 +99,7 @@ export function GolfCourseManagement() {
     setError(null);
 
     try {
+      const token = getToken();
       const response = await fetch('/api/admin/golf-courses', {
         method: 'POST',
         headers: {
@@ -130,6 +132,7 @@ export function GolfCourseManagement() {
     setError(null);
 
     try {
+      const token = getToken();
       const response = await fetch(`/api/admin/golf-courses/${editingCourse.id}`, {
         method: 'PUT',
         headers: {
@@ -158,6 +161,7 @@ export function GolfCourseManagement() {
     if (!confirm('Are you sure you want to delete this golf course? This will also delete all associated users, customers, and bookings.')) return;
 
     try {
+      const token = getToken();
       const response = await fetch(`/api/admin/golf-courses/${courseId}`, {
         method: 'DELETE',
         headers: {

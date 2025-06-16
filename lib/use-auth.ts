@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface User {
@@ -63,7 +63,7 @@ export function useAuth() {
     });
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_data');
     setAuthState({
@@ -73,9 +73,9 @@ export function useAuth() {
       isAuthenticated: false
     });
     router.push('/admin/login');
-  };
+  }, [router]);
 
-  const checkAuth = async (): Promise<boolean> => {
+  const checkAuth = useCallback(async (): Promise<boolean> => {
     const token = authState.token || localStorage.getItem('auth_token');
     
     if (!token) {
@@ -110,7 +110,7 @@ export function useAuth() {
       logout();
       return false;
     }
-  };
+  }, [authState.token, logout]);
 
   const getToken = (): string | null => {
     return authState.token || localStorage.getItem('auth_token');

@@ -9,6 +9,7 @@ export interface GolfCourseMapping {
 // For now, we'll use a simple mapping based on golf course names
 // In a production system, you might want to store this mapping in the database
 export async function getGolfCourseBySubdomain(subdomain: string): Promise<GolfCourseMapping | null> {
+  console.log('getGolfCourseBySubdomain', subdomain);
   try {
     // First, try to find a golf course with a name that matches the subdomain
     // This is a simple approach - you might want to implement a more sophisticated mapping

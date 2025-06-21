@@ -3,11 +3,11 @@ import { verifyToken as verifyJwtToken } from './auth';
 import { prisma } from './db';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+// Ensure JWT_SECRET is provided
+const JWT_SECRET = process.env.JWT_SECRET;
 
-// Add warning if JWT_SECRET is not set
-if (!process.env.JWT_SECRET) {
-  console.warn('⚠️  JWT_SECRET environment variable is not set! Using fallback value. Please set JWT_SECRET in your .env.local file.');
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
 }
 
 export function withAuth(handler: (request: NextRequest, user: any) => Promise<NextResponse>) {
@@ -59,7 +59,8 @@ export async function verifyToken(request: NextRequest) {
       return { success: false, error: 'Malformed token' };
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    // JWT_SECRET is guaranteed to be defined due to check above
+    const decoded = jwt.verify(token, JWT_SECRET!) as any;
 
     // Get system user from database
     const user = await prisma.systemUser.findUnique({
@@ -80,11 +81,11 @@ export async function verifyToken(request: NextRequest) {
     return { success: true, user };
   } catch (error) {
     console.error('Token verification error:', error);
-    if (error instanceof jwt.JsonWebTokenError) {
-      return { success: false, error: 'Invalid token format' };
-    }
     if (error instanceof jwt.TokenExpiredError) {
       return { success: false, error: 'Token expired' };
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      return { success: false, error: 'Invalid token format' };
     }
     return { success: false, error: 'Invalid token' };
   }
@@ -98,7 +99,8 @@ export async function verifyGolfCourseToken(request: NextRequest, expectedCourse
     }
 
     const token = authHeader.substring(7);
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    // JWT_SECRET is guaranteed to be defined due to check above
+    const decoded = jwt.verify(token, JWT_SECRET!) as any;
 
     // Get golf course user from database
     const user = await prisma.user.findUnique({
@@ -127,6 +129,12 @@ export async function verifyGolfCourseToken(request: NextRequest, expectedCourse
     return { success: true, user };
   } catch (error) {
     console.error('Golf course token verification error:', error);
+    if (error instanceof jwt.TokenExpiredError) {
+      return { success: false, error: 'Token expired' };
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      return { success: false, error: 'Invalid token format' };
+    }
     return { success: false, error: 'Invalid token' };
   }
 } 

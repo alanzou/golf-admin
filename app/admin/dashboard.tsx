@@ -4,7 +4,8 @@ import { useActionState, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trash2, Loader2, LogOut, User, Users, MapPin, Building } from 'lucide-react';
+import { LogoutDialog } from '@/components/ui/logout-dialog';
+import { Trash2, Loader2, LogOut, User, Users, MapPin, Building, Smartphone } from 'lucide-react';
 import Link from 'next/link';
 import { deleteSubdomainAction } from '@/app/actions';
 import { rootDomain, protocol } from '@/lib/utils';
@@ -12,6 +13,7 @@ import { useAuth } from '@/lib/use-auth';
 import { UserManagement } from './components/user-management';
 import { GolfCourseManagement } from './components/golf-course-management';
 import { GolfCourseUserManagement } from './components/golf-course-user-management';
+import { DeviceManagement } from './components/device-management';
 
 type Tenant = {
   subdomain: string;
@@ -26,34 +28,50 @@ type DeleteState = {
 
 function DashboardHeader() {
   const { user, logout } = useAuth();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+  };
 
   return (
-    <div className="flex justify-between items-center mb-8">
-      <h1 className="text-3xl font-bold">Subdomain Management</h1>
-      <div className="flex items-center gap-4">
-        {user && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <User className="h-4 w-4" />
-            <span>Welcome, {user.name}</span>
-          </div>
-        )}
-        <Link
-          href={`${protocol}://${rootDomain}`}
-          className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-        >
-          {rootDomain}
-        </Link>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={logout}
-          className="flex items-center gap-2"
-        >
-          <LogOut className="h-4 w-4" />
-          Logout
-        </Button>
+    <>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Subdomain Management</h1>
+        <div className="flex items-center gap-4">
+          {user && (
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <User className="h-4 w-4" />
+              <span>Welcome, {user.name}</span>
+            </div>
+          )}
+          <Link
+            href={`${protocol}://${rootDomain}`}
+            className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            {rootDomain}
+          </Link>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowLogoutDialog(true)}
+            className="flex items-center gap-2"
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
+        </div>
       </div>
-    </div>
+
+      <LogoutDialog
+        isOpen={showLogoutDialog}
+        onClose={() => setShowLogoutDialog(false)}
+        onConfirm={handleLogout}
+        title="Confirm Admin Logout"
+        description="Are you sure you want to log out of the admin panel? You will need to sign in again to access the system."
+        userName={user?.name}
+      />
+    </>
   );
 }
 
@@ -172,7 +190,7 @@ export function AdminDashboard({ tenants }: { tenants: Tenant[] }) {
       <DashboardHeader />
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="subdomains" className="flex items-center gap-2">
             <Building className="h-4 w-4" />
             Subdomains
@@ -188,6 +206,10 @@ export function AdminDashboard({ tenants }: { tenants: Tenant[] }) {
           <TabsTrigger value="golf-course-users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             Golf Course Users
+          </TabsTrigger>
+          <TabsTrigger value="devices" className="flex items-center gap-2">
+            <Smartphone className="h-4 w-4" />
+            Devices
           </TabsTrigger>
         </TabsList>
         
@@ -205,6 +227,10 @@ export function AdminDashboard({ tenants }: { tenants: Tenant[] }) {
         
         <TabsContent value="golf-course-users" className="space-y-6">
           <GolfCourseUserManagement />
+        </TabsContent>
+        
+        <TabsContent value="devices" className="space-y-6">
+          <DeviceManagement />
         </TabsContent>
       </Tabs>
 

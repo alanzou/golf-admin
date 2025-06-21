@@ -63,7 +63,26 @@ export function useAuth() {
     });
   };
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async (skipServerCall = false) => {
+    const token = authState.token || localStorage.getItem('auth_token');
+    
+    // Call server-side logout endpoint if token exists and not skipping
+    if (token && !skipServerCall) {
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      } catch (error) {
+        console.error('Server-side logout error:', error);
+        // Continue with client-side logout even if server call fails
+      }
+    }
+
+    // Clear client-side data
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_data');
     setAuthState({
@@ -72,8 +91,10 @@ export function useAuth() {
       isLoading: false,
       isAuthenticated: false
     });
+    
+    // Redirect to login
     router.push('/admin/login');
-  }, [router]);
+  }, [router, authState.token]);
 
   const checkAuth = useCallback(async (): Promise<boolean> => {
     const token = authState.token || localStorage.getItem('auth_token');

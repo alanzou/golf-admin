@@ -2,9 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Calendar, FileText, ClipboardList, ArrowLeft } from 'lucide-react';
+import { Calendar, FileText, ClipboardList, ArrowLeft, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { LogoutDialog } from '@/components/ui/logout-dialog';
+import { useGolfCourseAuth } from '@/lib/use-golf-course-auth';
 
 interface ReportsNavigationProps {
   golfCourseName?: string;
@@ -12,6 +15,12 @@ interface ReportsNavigationProps {
 
 export function ReportsNavigation({ golfCourseName }: ReportsNavigationProps) {
   const pathname = usePathname();
+  const { user, logout } = useGolfCourseAuth();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+  const handleLogout = async () => {
+    await logout(false, '/login');
+  };
 
   const navigationItems = [
     {
@@ -80,8 +89,24 @@ export function ReportsNavigation({ golfCourseName }: ReportsNavigationProps) {
             })}
           </nav>
 
-          {/* Right side - spacer for balance */}
-          <div className="w-20 hidden md:block" />
+          {/* Right side - User info and logout */}
+          <div className="flex items-center gap-2">
+            {user && (
+              <div className="hidden md:flex items-center gap-2 text-sm text-gray-600">
+                <User className="h-4 w-4" />
+                <span>{user.firstName} {user.lastName}</span>
+              </div>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowLogoutDialog(true)}
+              className="flex items-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Logout</span>
+            </Button>
+          </div>
         </div>
 
         {/* Mobile-friendly navigation description */}
@@ -94,6 +119,15 @@ export function ReportsNavigation({ golfCourseName }: ReportsNavigationProps) {
           )}
         </div>
       </div>
+
+      <LogoutDialog
+        isOpen={showLogoutDialog}
+        onClose={() => setShowLogoutDialog(false)}
+        onConfirm={handleLogout}
+        title={golfCourseName ? `Logout from ${golfCourseName}` : "Confirm Logout"}
+        description="Are you sure you want to log out? You will need to sign in again to access the reports."
+        userName={user ? `${user.firstName} ${user.lastName} (@${user.username})` : undefined}
+      />
     </div>
   );
 } 

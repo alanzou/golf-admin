@@ -69,7 +69,38 @@ export function useGolfCourseAuth() {
     });
   };
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async (skipServerCall = false, redirectTo?: string) => {
+    const token = authState.token || localStorage.getItem('golf_course_auth_token');
+    const userData = localStorage.getItem('golf_course_user_data');
+    
+    // Get golf course ID for server call
+    let golfCourseId: number | null = null;
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        golfCourseId = user.golfCourse?.id;
+      } catch (error) {
+        console.error('Error parsing user data during logout:', error);
+      }
+    }
+    
+    // Call server-side logout endpoint if token exists and not skipping
+    if (token && golfCourseId && !skipServerCall) {
+      try {
+        await fetch(`/api/golf-course/${golfCourseId}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      } catch (error) {
+        console.error('Server-side golf course logout error:', error);
+        // Continue with client-side logout even if server call fails
+      }
+    }
+
+    // Clear client-side data
     localStorage.removeItem('golf_course_auth_token');
     localStorage.removeItem('golf_course_user_data');
     setAuthState({
@@ -78,8 +109,12 @@ export function useGolfCourseAuth() {
       isLoading: false,
       isAuthenticated: false
     });
-    // Don't redirect here - let the calling component handle it
-  }, []);
+    
+    // Handle redirection if specified
+    if (redirectTo) {
+      router.push(redirectTo);
+    }
+  }, [router, authState.token]);
 
   const checkAuth = useCallback(async (golfCourseId: number): Promise<boolean> => {
     const token = authState.token || localStorage.getItem('golf_course_auth_token');

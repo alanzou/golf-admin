@@ -33,6 +33,9 @@ model User {
   GolfCourse   GolfCourse @relation(fields: [golfCourseId], references: [id])
 
   @@unique([username, golfCourseId], map: "unique_username_per_course")
+  @@index([golfCourseId])
+  @@index([isActive])
+  @@index([role])
 }
 
 model Booking {
@@ -58,6 +61,13 @@ model Booking {
   GolfCourse         GolfCourse         @relation(fields: [golfCourseId], references: [id])
   BookingDetail      BookingDetail[]
   BookingPayment     BookingPayment[]
+
+  @@index([golfCourseId])
+  @@index([createdAt])
+  @@index([bookingStatus])
+  @@index([integrationStatus])
+  @@index([phone])
+  @@index([email])
 }
 
 model BookingDetail {
@@ -75,6 +85,9 @@ model BookingDetail {
   playerType      player_type @default(adult)
   rateType        rate_type   @default(cart)
   Booking         Booking     @relation(fields: [bookingUUID], references: [bookingUUID])
+
+  @@index([bookingUUID])
+  @@index([teeTime])
 }
 
 model BookingPayment {
@@ -161,6 +174,9 @@ model Customer {
   GolfCourse   GolfCourse @relation(fields: [golfCourseId], references: [id])
 
   @@unique([phone, golfCourseId], map: "phone_courseid")
+  @@index([golfCourseId])
+  @@index([email])
+  @@index([isMember])
 }
 
 model GolfCourse {
@@ -190,9 +206,25 @@ model GolfCourse {
   CheckInTransaction         CheckInTransaction[]
   Customer                   Customer[]
   User                       User[]
+  Device                     Device[]
   checkin_tee_time_sheet     checkin_tee_time_sheet[]
   golf_rates                 golf_rates[]
   tee_time_sheet             tee_time_sheet[]
+}
+
+model Device {
+  id           Int        @id @default(autoincrement())
+  name         String
+  deviceType   String     @default("android")
+  deviceId     String     @unique
+  isActive     Boolean    @default(true)
+  lastSeen     DateTime?
+  golfCourseId Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  GolfCourse   GolfCourse @relation(fields: [golfCourseId], references: [id])
+
+ 
 }
 
 model PhoneCall {

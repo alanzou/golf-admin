@@ -24,7 +24,7 @@ interface LoginResponse {
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
-    name: '',
+    username: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -111,13 +111,13 @@ export default function LoginPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Username</Label>
+                <Label htmlFor="username">Username</Label>
                 <Input
-                  id="name"
-                  name="name"
+                  id="username"
+                  name="username"
                   type="text"
                   placeholder="Enter your username"
-                  value={formData.name}
+                  value={formData.username}
                   onChange={handleInputChange}
                   required
                   disabled={isLoading}
@@ -162,7 +162,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading || !formData.name || !formData.password}
+                disabled={isLoading || !formData.username || !formData.password}
               >
                 {isLoading ? (
                   <>

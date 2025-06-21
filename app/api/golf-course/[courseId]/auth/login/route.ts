@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { verifyPassword, generateToken } from '@/lib/auth';
+import { verifyPassword, generateGolfCourseToken } from '@/lib/auth';
 
 export async function POST(
   request: NextRequest,
@@ -85,7 +85,7 @@ export async function POST(
     }
 
     // Generate JWT token with golf course context
-    const token = generateToken(user.id, user.username, `${user.role}:${golfCourseId}`);
+    const token = generateGolfCourseToken(user.id, user.username, `${user.role}:${golfCourseId}`);
 
     // Return success response with token
     return NextResponse.json({

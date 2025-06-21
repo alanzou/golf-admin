@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LogoutDialog } from '@/components/ui/logout-dialog';
 import { Loader2, LogOut, User, Users, Settings, Building, FileText, Calendar, ClipboardList } from 'lucide-react';
 import Link from 'next/link';
 import { useGolfCourseAuth } from '@/lib/use-golf-course-auth';
@@ -18,38 +19,54 @@ interface GolfCourseAdminDashboardProps {
 
 function DashboardHeader({ golfCourseName, subdomain }: { golfCourseName: string; subdomain: string }) {
   const { user, logout } = useGolfCourseAuth();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+  const handleLogout = async () => {
+    await logout(false, '/login'); // Redirect to login after logout
+  };
 
   return (
-    <div className="flex justify-between items-center mb-8">
-      <div>
-        <h1 className="text-3xl font-bold">{golfCourseName} Admin</h1>
-        <p className="text-gray-600">Management Dashboard for {subdomain}</p>
+    <>
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">{golfCourseName} Admin</h1>
+          <p className="text-gray-600">Management Dashboard for {subdomain}</p>
+        </div>
+        <div className="flex items-center gap-4">
+          {user && (
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <User className="h-4 w-4" />
+              <span>Welcome, {user.firstName} {user.lastName}</span>
+              <span className="text-xs bg-gray-100 px-2 py-1 rounded">{user.role}</span>
+            </div>
+          )}
+          <Link
+            href={`/`}
+            className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            ← Back to site
+          </Link>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowLogoutDialog(true)}
+            className="flex items-center gap-2"
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
+        </div>
       </div>
-      <div className="flex items-center gap-4">
-        {user && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <User className="h-4 w-4" />
-            <span>Welcome, {user.firstName} {user.lastName}</span>
-            <span className="text-xs bg-gray-100 px-2 py-1 rounded">{user.role}</span>
-          </div>
-        )}
-        <Link
-          href={`/`}
-          className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-        >
-          ← Back to site
-        </Link>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={logout}
-          className="flex items-center gap-2"
-        >
-          <LogOut className="h-4 w-4" />
-          Logout
-        </Button>
-      </div>
-    </div>
+
+      <LogoutDialog
+        isOpen={showLogoutDialog}
+        onClose={() => setShowLogoutDialog(false)}
+        onConfirm={handleLogout}
+        title={`Logout from ${golfCourseName}`}
+        description="Are you sure you want to log out? You will need to sign in again to access the golf course management system."
+        userName={user ? `${user.firstName} ${user.lastName} (@${user.username})` : undefined}
+      />
+    </>
   );
 }
 

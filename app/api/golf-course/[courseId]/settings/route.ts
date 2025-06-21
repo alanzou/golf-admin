@@ -17,7 +17,7 @@ export async function GET(
     // Verify golf course authentication
     const authResult = await verifyGolfCourseToken(request, courseId);
     if (!authResult.success) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: authResult.error }, { status: 401 });
     }
 
     const golfCourse = await prisma.golfCourse.findUnique({
@@ -65,7 +65,7 @@ export async function PUT(
     // Verify golf course authentication
     const authResult = await verifyGolfCourseToken(request, courseId);
     if (!authResult.success) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: authResult.error }, { status: 401 });
     }
 
     // Check if user has permission to edit settings (MANAGER or OWNER)
